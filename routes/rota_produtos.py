@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services.produto_service import criar_produto, dar_saida, listar_produtos, alertaValidade, alertaEstoqueBaixo
+from services.service_produto import criar_produto, dar_saida, listar_produtos, alertaValidade, alertaEstoqueBaixo
 
 produtos_bp = Blueprint('produtos', __name__)
 

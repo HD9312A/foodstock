@@ -1,11 +1,17 @@
 from database.db import estoque
-from models.produto import Produto
+from models.model_produto import Produto
 from datetime import datetime, timedelta
 from enums.unidade import Unidade
+from database.db import db
 
 
 def listar_produtos():
-    return [p.to_dict() for p in estoque]
+    produtos = Produto.query.all()
+
+    return [
+        produto.to_dict()
+        for produto in produtos
+    ]
 
 def criar_produto(data):
     try:
@@ -23,28 +29,26 @@ def criar_produto(data):
         quantidadeMinima=data["quantidadeMinima"],
         dataValidade=data["dataValidade"]
     )
-    estoque.append(novo)
-    return novo.to_dict()
+    db.session.add(novo)
+    db.session.commit()
+    db.session.add(novo)
+    db.session.commit()
 
 def dar_saida(id, quantidade):
-    for produto in estoque:
-        if produto.id == id:
-            produto.quantidade -= quantidade
-            return produto.to_dict()
-    return None
+        produto = Produto.query.get(id)
+        produto.quantidade -= quantidade
+        db.session.commit()
+
+
 
 def alertaEstoqueBaixo():
-    produtos_alerta = []
-
-    for produtos in estoque:
-        if produtos.quantidadeAtual <= produtos.quantidadeMinima:
-            produtos_alerta.append(produtos.to_dict())
-
-    return produtos_alerta
+    produtos = Produto.query.filter(Produto.quantidadeAtual <= Produto.quantidadeMinima).all()
+    return produtos
 
 def alertaValidade(dias=2):
     produtos_vencendo = []
     hoje = datetime.today()
+
 
     for produto in estoque:
         validade = datetime.strptime(produto.dataValidade, "%Y-%m-%d")

@@ -1,8 +1,21 @@
 from datetime import datetime
 from enums.unidade import Unidade
+from database.db import db
 
 
-class Produto:
+
+class Produto(db.Model):
+    __tablename__ = "produtos"
+
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    categoria = db.Column(db.String(100), nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False)
+    unidade = db.Column(db.Enum(Unidade), nullable=False)
+    quantidadeAtual = db.Column(db.Integer, nullable=False)
+    quantidadeMinima = db.Column(db.Integer, nullable=False)
+    dataValidade = db.Column(db.Date, nullable=False)
+
     def __init__(self, id, nome, categoria, quantidade, unidade, quantidadeAtual, quantidadeMinima, dataValidade):
         self.id = id
         self.nome = nome
