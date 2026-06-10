@@ -40,7 +40,6 @@ def relatorio_categorias_detalhado():
         resultado[categoria].append({
             "id": produto.id,
             "nome": produto.nome,
-            "quantidadeAtual": produto.quantidadeAtual,
             "quantidadeMinima": produto.quantidadeMinima,
             "unidade": produto.unidade,
             "validade": produto.dataValidade.strftime("%Y-%m-%d")
@@ -57,7 +56,7 @@ def relatorio_resumo():
     estoque_baixo = sum(
         1
         for produto in produtos
-        if produto.quantidadeAtual <= produto.quantidadeMinima
+        if produto.quantidade <= produto.quantidadeMinima
     )
 
     vencendo = sum(
@@ -80,13 +79,12 @@ def relatorio_estoque_baixo():
 
     for produto in produtos:
 
-        if produto.quantidadeAtual <= produto.quantidadeMinima:
+        if produto.quantidade <= produto.quantidadeMinima:
 
             resultado.append({
                 "id": produto.id,
                 "nome": produto.nome,
                 "categoria": produto.categoria,
-                "quantidadeAtual": produto.quantidadeAtual,
                 "quantidadeMinima": produto.quantidadeMinima
             })
 
@@ -125,7 +123,6 @@ def relatorio_quantidade_produtos():
             "id": produto.id,
             "nome": produto.nome,
             "categoria": produto.categoria,
-            "quantidadeAtual": produto.quantidadeAtual,
             "unidade": produto.unidade
         })
 

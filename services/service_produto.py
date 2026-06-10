@@ -1,17 +1,17 @@
-from database.db import estoque
 from models.model_produto import Produto
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from enums.unidade import Unidade
 from database.db import db
 
 
 def listar_produtos():
     produtos = Produto.query.all()
-
+    
     return [
         produto.to_dict()
         for produto in produtos
     ]
+
 
 def criar_produto(data):
     try:
@@ -19,13 +19,28 @@ def criar_produto(data):
     except ValueError:
         raise ValueError(f"Unidade '{data['unidade']}' inválida. Use uma das seguintes: {[u.value for u in Unidade]}")
 
+    if data["quantidade"] < 0 or data["quantidadeMinima"] < 0:
+        raise ValueError("As quantidades não podem ser negativas.")
+    
+    try:
+
+        validade = datetime.strptime(
+            data["dataValidade"],
+            "%Y-%m-%d"
+        )
+
+    except ValueError:
+
+        raise ValueError(
+            "Formato de data inválido. Use YYYY-MM-DD"
+        )
+
     novo = Produto(
-        id=len(estoque) + 1,
+        id=len(Produto.query.all()) + 1,
         nome=data["nome"],
         categoria=data["categoria"],
         quantidade=data["quantidade"],
         unidade=data["unidade"],
-        quantidadeAtual=data["quantidadeAtual"],
         quantidadeMinima=data["quantidadeMinima"],
         dataValidade=data["dataValidade"]
     )
@@ -34,24 +49,51 @@ def criar_produto(data):
     db.session.add(novo)
     db.session.commit()
 
+
+def buscar_produto(id):
+    produto = Produto.query.get(id)
+    if not produto:
+        raise ValueError("Produto não encontrado.")
+    return produto.to_dict()
+
+def dar_entrada(id, quantidade):
+    produto = Produto.query.get(id)
+    if not produto:
+        raise ValueError("Produto não encontrado.")
+    if quantidade <= 0:
+        raise ValueError("Quantidade deve ser maior que zero.")
+    
+    produto.quantidade += quantidade
+    db.session.commit()
+    return produto.to_dict()
+
+
 def dar_saida(id, quantidade):
         produto = Produto.query.get(id)
+        if not produto:
+            raise ValueError("Produto não encontrado.")
+        if produto.quantidade <= 0:
+            raise ValueError("Quantidade não pode ser negativa ou igual a zero.")
+        if quantidade > produto.quantidade:
+            raise ValueError("Quantidade insuficiente em estoque.")
+        
         produto.quantidade -= quantidade
         db.session.commit()
-
+        return produto.to_dict()
 
 
 def alertaEstoqueBaixo():
-    produtos = Produto.query.filter(Produto.quantidadeAtual <= Produto.quantidadeMinima).all()
-    return produtos
+    produtos = Produto.query.filter(Produto.quantidade <= Produto.quantidadeMinima).all()
+    return [produto.to_dict() for produto in produtos]
+
 
 def alertaValidade(dias=2):
     produtos_vencendo = []
-    hoje = datetime.today()
+    hoje = date.today()
 
 
-    for produto in estoque:
-        validade = datetime.strptime(produto.dataValidade, "%Y-%m-%d")
+    for produto in Produto.query.all():
+        validade = produto.dataValidade
         if validade - hoje <= timedelta(days=dias):
             produtos_vencendo.append(produto.to_dict())
     return produtos_vencendo
