@@ -7,14 +7,14 @@ class Usuario(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
-    login = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
     senha = db.Column(db.String(100), nullable=False)
     perfil = db.Column(db.String(100), nullable=False)
 
-    def __init__(self, id, nome, login, senha, perfil):
+    def __init__(self, id, nome, email, senha, perfil):
         self.id = id
         self.nome = nome
-        self.login = login 
+        self.email = email 
         self.senha = senha 
         self.perfil = perfil 
 
@@ -22,7 +22,7 @@ class Usuario(db.Model):
         return {
             "id": self.id,
             "nome": self.nome,
-            "login": self.login,
+            "email": self.email,
             "senha": self.senha,
             "perfil": self.perfil
 

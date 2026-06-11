@@ -24,14 +24,22 @@ def listar():
 
 @usuarios_bp.route("/usuarios", methods=["POST"])
 def criar():
-    dados = request.get_json()
-    usuario = criar_usuario(dados)
-    return jsonify(usuario), 201
+    try:
+        dados = request.get_json()
+        usuario = criar_usuario(dados)
+        return jsonify(usuario), 201
+    except Exception as erro:
+        return jsonify({
+            "erro": str(erro)}), 404
 
 @usuarios_bp.route("/usuarios/<int:id>", methods=["GET"])
 def buscar(id):
-    usuario = buscar_usuario(id)
-    return jsonify(usuario)
+    try:
+        usuario = buscar_usuario(id)
+        return jsonify(usuario)
+    except Exception as erro:
+        return jsonify({
+            "erro": str(erro)}), 404
 
 @usuarios_bp.route("/usuarios/<int:id>", methods=["PUT"])
 def atualizar(id):

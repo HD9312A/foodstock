@@ -22,7 +22,7 @@ class Produto(db.Model):
         self.quantidade = quantidade
         self.unidade = Unidade(unidade)
         self.quantidadeMinima = quantidadeMinima
-        self.dataValidade = datetime.strptime(dataValidade, "%Y-%m-%d") # formato: "YYYY-MM-DD"
+        self.dataValidade = dataValidade
 
     def to_dict(self):
         return {

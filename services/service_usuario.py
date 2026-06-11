@@ -14,7 +14,7 @@ def listar_usuarios():
 
 def criar_usuario(data):
 
-    campos_obrigatorios = ['nome', 'email', 'senha']
+    campos_obrigatorios = ['nome', 'email', 'senha', "perfil"]
     for campo in campos_obrigatorios:
         if campo not in data:
             raise Exception(f"Campo '{campo}' é obrigatório.")
@@ -47,11 +47,12 @@ def criar_usuario(data):
     if data["perfil"].lower() not in perfis_validos:
         raise Exception(f"Perfil '{data['perfil']}' é inválido. Perfis válidos: {perfis_validos}.")
     
-    login_existente = Usuario.query.filter_by(login=data['login']).first()
+    login_existente = Usuario.query.filter_by(email=data['email']).first()
     if login_existente:
         raise Exception("Login já cadastrado. Escolha outro login.")
     
     usuario = Usuario(
+        id=len(Usuario.query.all()) + 1,
         nome=data['nome'],
         email=data['email'],
         senha=data['senha'],

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services.service_produto import criar_produto, dar_saida, dar_entrada, listar_produtos, alertaValidade, alertaEstoqueBaixo, buscar_produto
+from services.service_produto import criar_produto, dar_saida, dar_entrada, listar_produtos, alertaValidade, alertaEstoqueBaixo, buscar_produto, deletar_produto, atualizar_produto
 
 produtos_bp = Blueprint('produtos', __name__)
 
@@ -14,8 +14,8 @@ def criar():
     try:
         produto = criar_produto(data)
         return jsonify(produto), 201
-    except Exception as e:
-        return {"erro": str(e)}, 400 #400 (Bad Request) = o servidor não pode processar a solicitação devido a algo que é percebido como um erro do cliente (ex: dados inválidos)
+    except Exception as erro:
+        return {"erro": str(erro)}, 400 #400 (Bad Request) = o servidor não pode processar a solicitação devido a algo que é percebido como um erro do cliente (ex: dados inválidos)
     
 @produtos_bp.route('/produtos/<int:id>', methods=['GET'])
 def buscar(id):
@@ -25,6 +25,15 @@ def buscar(id):
     except ValueError as erro:
         return jsonify({
             "erro": str(erro)}), 404
+    
+@produtos_bp.route('/produtos/<int:id>', methods=["PUT"])
+def atualizar(id):
+    try:
+        produto = atualizar_produto(id, request.json)
+        return jsonify(produto)
+    except ValueError as erro:
+        return jsonify({
+            "erro": str(erro)}), 400
 
 @produtos_bp.route('/produtos/<int:id>/entrada', methods=['POST'])
 def entrada(id):
@@ -46,6 +55,16 @@ def saida(id):
         return jsonify(produto)
     return {"erro": "Produto não encontrado"}, 404 #404 (Not Found) = o servidor não pode encontrar o recurso solicitado
 
+@produtos_bp.route(
+    "/produto/<int:id>", methods=["DELETE"])
+def deletar(id):
+    try:
+        resultado = deletar_produto(id)
+        return jsonify(resultado)
+    except ValueError as erro:
+        return jsonify({
+            "erro": str(erro)}), 404
+
 @produtos_bp.route('/produtos/alerta/estoque-baixo', methods=['GET'])
 def get_alerta_estoque_baixo():
     return jsonify(alertaEstoqueBaixo())
@@ -54,3 +73,4 @@ def get_alerta_estoque_baixo():
 def get_alerta_validade():
     dias = request.args.get('dias', default=2, type=int)
     return jsonify(alertaValidade(dias))
+

@@ -42,12 +42,14 @@ def criar_produto(data):
         quantidade=data["quantidade"],
         unidade=data["unidade"],
         quantidadeMinima=data["quantidadeMinima"],
-        dataValidade=data["dataValidade"]
+        dataValidade=datetime.strptime(data["dataValidade"], "%Y-%m-%d").date()
     )
     db.session.add(novo)
     db.session.commit()
     db.session.add(novo)
     db.session.commit()
+
+    return novo.to_dict()
 
 
 def buscar_produto(id):
@@ -55,6 +57,45 @@ def buscar_produto(id):
     if not produto:
         raise ValueError("Produto não encontrado.")
     return produto.to_dict()
+
+
+def atualizar_produto(id, data):
+    produto = Produto.query.get(id)
+    if not produto:
+        raise ValueError("Produto não encontrado.")
+    if "nome" in data:
+        produto.nome = data["nome"]
+
+    if "categoria" in data:
+        produto.categoria = data["categoria"]
+
+    if "quantidadeAtual" in data:
+
+        if data["quantidadeAtual"] < 0:
+            raise ValueError("Quantidade atual não pode ser negativa.")
+
+        produto.quantidadeAtual = data["quantidadeAtual"]
+
+    if "quantidadeMinima" in data:
+
+        if data["quantidadeMinima"] < 0:
+            raise ValueError("Quantidade mínima não pode ser negativa.")
+
+        produto.quantidadeMinima = data["quantidadeMinima"]
+
+    if "unidade" in data:
+        produto.unidade = Unidade(data["unidade"])
+
+    if "dataValidade" in data:
+        try:
+            produto.dataValidade = datetime.strptime(data["dataValidade"], "%Y-%m-%d").date()
+        except ValueError:
+            raise ValueError ("Data inválida. Utilize o formato YYYY-MM-DD.")
+
+    db.session.commit()
+
+    return produto.to_dict()
+
 
 def dar_entrada(id, quantidade):
     produto = Produto.query.get(id)
@@ -81,6 +122,15 @@ def dar_saida(id, quantidade):
         db.session.commit()
         return produto.to_dict()
 
+def deletar_produto(id):
+    produto = Produto.query.get(id)
+    if not produto:
+        raise ValueError("Produto não encontrado.")
+
+    db.session.delete(produto)
+    db.session.commit()
+    return {
+        "mensagem": "Produto removido com sucesso."}
 
 def alertaEstoqueBaixo():
     produtos = Produto.query.filter(Produto.quantidade <= Produto.quantidadeMinima).all()
